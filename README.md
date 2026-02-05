@@ -1,2 +1,2 @@
 # My-Obsidian-Repository
-我的Obsidian 仓库
+自用知识库DEMO
