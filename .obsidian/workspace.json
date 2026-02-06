@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "JAVA/时序数据库InfluxDB/InfluxDB_4_合并机制与性能测试.md",
+                "file": "JAVA/时序数据库InfluxDB/InfluxDB_1_核心概念与数据模型.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "InfluxDB_4_合并机制与性能测试"
+              "title": "InfluxDB_1_核心概念与数据模型"
             }
           }
         ]

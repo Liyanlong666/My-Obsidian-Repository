@@ -1,34 +1,34 @@
 # InfluxDB TSM 存储引擎深度解析
 
-TSM (Time-Structured Merge Tree) 是 InfluxDB 专门为时序数据优化的核心存储引擎。它在 LSM 树的基础上，通过列式存储和专用索引解决了时间序列数据的高吞吐和高基数问题。
+TSM (Time-Structured Merge Tree) 是 InfluxDB 针对时序数据优化的核心。
 
-## 1. TSM 架构组成
+## 1. 核心组件详解
 
 ### WAL (Write Ahead Log)
-*   **目的**: 确保数据持久化，崩溃后可恢复。
-*   **特性**: 顺序追加写入，性能极高。文件大小达到 10MB 后会滚动产生新段。
-*   **流程**: 数据先写入 WAL，并在 fsync 后才向客户端返回成功。
+*   **存储格式**: 采用 **TLV (Type-Length-Value)** 标准。
+    *   `Type` (1 byte): 条目类型（写入或删除）。
+    *   `Length` (4 bytes, uint32): 压缩块的长度。
+    *   `Compressed Block`: 使用 Snappy 压缩的数据。
+*   **持久化**: 采用 `fsync` 确保落盘。文件编号单调递增（如 `_00001.wal`）。
 
-### Cache (缓存)
-*   **目的**: 存储最近写入的热数据，支持即时查询。
-*   **结构**: WAL 中数据的内存表示，按 SeriesKey 组织的 Map。
-*   **阈值**: 超过 `cache-snapshot-memory-size` 会触发快照刷新到 TSM 文件。
+### Cache (内存缓存)
+*   **本质**: WAL 的内存副本，数据未压缩。
+*   **查询合并**: 查询时会从 Cache 中读取副本，与 TSM 文件数据合并，确保能读到刚写入的数据。
+*   **控制参数**:
+    *   `cache-snapshot-memory-size`: 达到此阈值（默认25MB）触发 Snapshot，将数据存入 TSM 文件。
+    *   `cache-max-memory-size`: 达到此上限（默认512MB）拒绝新写入，产生“背压”。
+    *   `cache-snapshot-write-cold-duration`: 若指定时间内（默认10min）没有新写入，强制执行 Snapshot。
 
 ### TSM Files
-*   **目的**: 磁盘上的只读、不可变数据文件。
-*   **特性**: 采用列式存储格式，高度压缩。
-*   **加载方式**: 内存映射 (mmap)。
-
-### TSI (Time Series Index)
-*   **目的**: 解决“高基数”问题（大量 SeriesKey 导致的内存瓶颈）。
-*   **特性**: 将索引持久化到磁盘，支持按需加载。
+磁盘上的不可变列式存储文件。
 
 ---
 
-## 2. TSM 文件格式 (TSM File Structure)
+## 2. TSM 文件详细结构
 
-TSM 文件由 Header, Blocks, Index, Footer 四部分组成：
+一个 TSM 文件逻辑上分为四块，物理结构如下：
 
+### 2.1 整体布局
 ```text
 +--------+------------------------------------+-------------+--------------+
 | Header |               Blocks               |    Index    |    Footer    |
@@ -36,43 +36,48 @@ TSM 文件由 Header, Blocks, Index, Footer 四部分组成：
 +--------+------------------------------------+-------------+--------------+
 ```
 
-### Header
-*   Magic (4 bytes): 标识文件类型。
-*   Version (1 byte): 引擎版本号。
+### 2.2 Blocks (数据块)
+每个 Block 包含 CRC32 校验和以及压缩数据。
+```text
++---------------------+-----------------------+----------------------+
+|       Block 1       |        Block 2        |       Block N        |
++---------------------+-----------------------+----------------------+
+|   CRC    |  Data    |    CRC    |   Data    |   CRC    |   Data    |
+| 4 bytes  | N bytes  |  4 bytes  | N bytes   | 4 bytes  |  N bytes  |
++---------------------+-----------------------+----------------------+
+```
+**Data 内部**: `Type(1B) | Len(VByte) | Compressed Timestamps | Compressed Values`
 
-### Blocks (Data Section)
-存储实际的压缩数据。每个 Block 仅包含**一个 SeriesKey 在一段连续时间内的一个 Field** 的数据。
-*   **Type (1 byte)**: 数据类型（Float, Integer, Boolean, String）。
-*   **Length (VByte)**: Timestamps 的压缩长度。
-*   **Timestamps**: 压缩的时间戳集合（通常使用 Delta-delta 编码）。
-*   **Values**: 压缩的指标值集合（根据类型使用 XOR, Snappy 等编码）。
+### 2.3 Index (索引块)
+索引是按 Series Key 的字典序排列的。
+```text
++-----------------------------------------------------------------------------+
+| Key Len |   Key   | Type | Count |Min Time |Max Time | Offset |  Size  |...|
+| 2 bytes | N bytes |1 byte|2 bytes| 8 bytes | 8 bytes |8 bytes |4 bytes |   |
++-----------------------------------------------------------------------------+
+```
+*   **Key**: `measurement + tagset + field`。
+*   **Min/Max Time**: 方便查询时根据时间范围快速跳过无关 Block。
 
-### Index (Index Section)
-索引块按 SeriesKey 的字典序排列，支持快速定位。
-*   **Series Key**: Measurement + Tags。
-*   **Field Key**: 字段名。
-*   **Type**: 数据类型。
-*   **Count**: 该 Series 下数据块的数量。
-*   **Block Entries**: 包含每个数据块的 `MinTime`, `MaxTime`, `Offset` (文件偏移) 和 `Size`。
-
-### Footer
-存储索引块开始的偏移量 (8 bytes)，文件读取时先从页脚开始。
+### 2.4 Footer (页脚)
+仅 8 字节，存储 **Index 部分的起始偏移量**。
+读取逻辑：`Open File -> Seek to Footer -> Read Index Offset -> Load Index -> Binary Search Key`。
 
 ---
 
-## 3. 核心流程
+## 3. 查询与删除细节
 
-### 写入流程
-1.  追加写入 WAL。
-2.  更新内存 Cache。
-3.  当 Cache 满或达到冷时间阈值，后台进程将其 Snapshot 成 TSM 文件并清空 WAL。
+### 查询处理
+1.  **二分查找**: 在内存映射的 Index 部分查找 Series Key。
+2.  **定位 Block**: 获取 `Offset` 和 `Size`，直接跳到 Blocks 区域读取。
+3.  **解压**: 仅解压目标数据块，IO 效率极高。
 
-### 查询流程
-1.  **定位文件**: 根据查询的时间范围，通过 FileStore 过滤可能相关的 TSM 文件。
-2.  **查找索引**: 在 TSM 文件的 Index 部分执行二分查找，定位 SeriesKey。
-3.  **时间过滤**: 根据 `MinTime` 和 `MaxTime` 进一步筛选目标 Data Block。
-4.  **读取解压**: 按照 `Offset` 读取 Data Block，解压并返回数据。
-5.  **合并结果**: 将从磁盘读取的数据与内存 Cache 中的热数据进行合并（Cache 数据优先，以支持更新）。
+### 删除操作 (Tombstones)
+由于 TSM 是不可变的，删除并不直接修改文件。
+1.  在内存 Cache 逐出数据。
+2.  写入一个 `.tombstone` 文件记录删除的 Series 和时间段。
+3.  在下一次 **Compaction (合并)** 时，才会真正移除这些数据。
 
 ---
 *整理自：内存索引和时间结构合并树 (TSM)、TSM（Time Structured Merge Tree）、InfluxDB TSM存储引擎之TSMFile 相关文档。*
+
