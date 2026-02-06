@@ -13,54 +13,28 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "GEMINI.md",
+                "file": "Clippings/Gemini CLI 会话管理：自动保存和恢复你的 AI 对话上下文.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "GEMINI"
+              "title": "Gemini CLI 会话管理：自动保存和恢复你的 AI 对话上下文"
             }
-          }
-        ]
-      },
-      {
-        "id": "66736ae42d5aa0d2",
-        "type": "tabs",
-        "children": [
+          },
           {
-            "id": "3cd8ec91ebe970de",
+            "id": "7a9120d070469cff",
             "type": "leaf",
             "state": {
-              "type": "translator-view",
+              "type": "release-notes",
               "state": {
-                "language_from": "auto",
-                "language_to": "zh-cn",
-                "translation_service": "azure_translator",
-                "auto_translate": false,
-                "apply_glossary": false,
-                "view_mode": 0,
-                "filter_mode": 0,
-                "show_attribution": false,
-                "top_buttons": [
-                  "change-service",
-                  "automatic-translation",
-                  "change-layout",
-                  "apply-filter",
-                  "open-settings"
-                ],
-                "left_buttons": [
-                  "paste",
-                  "clear"
-                ],
-                "right_buttons": [
-                  "copy"
-                ]
+                "currentVersion": "1.11.7"
               },
-              "icon": "azure_translator",
-              "title": "Azure Translator"
+              "icon": "lucide-book-up",
+              "title": "版本说明 1.11.7"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -234,10 +208,10 @@
       "translate:Open translation view": false
     }
   },
-  "active": "3cd8ec91ebe970de",
+  "active": "7a9120d070469cff",
   "lastOpenFiles": [
-    "Clippings/Gemini CLI 会话管理：自动保存和恢复你的 AI 对话上下文.md",
     "GEMINI.md",
+    "Clippings/Gemini CLI 会话管理：自动保存和恢复你的 AI 对话上下文.md",
     "Clippings",
     "JAVA/八股文/JUC面试题/并发工具类/并发工具类.md",
     "JAVA/kafka/kafka.md",
