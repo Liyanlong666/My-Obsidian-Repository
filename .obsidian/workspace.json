@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "JAVA/时序数据库InfluxDB/InfluxDB_1_核心概念与数据模型.md",
+                "file": "JAVA/kafka/kafka.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "InfluxDB_1_核心概念与数据模型"
+              "title": "kafka"
             }
           }
         ]
@@ -197,10 +197,10 @@
   "active": "f9b1b9b91e1b9ed4",
   "lastOpenFiles": [
     "JAVA/时序数据库InfluxDB/InfluxDB_5_选型对比与架构演进.md",
-    "JAVA/时序数据库InfluxDB/InfluxDB_4_合并机制与性能测试.md",
-    "JAVA/时序数据库InfluxDB/InfluxDB_3_时序压缩算法详解.md",
     "JAVA/时序数据库InfluxDB/InfluxDB_2_TSM存储引擎深度解析.md",
     "JAVA/时序数据库InfluxDB/InfluxDB_1_核心概念与数据模型.md",
+    "JAVA/时序数据库InfluxDB/InfluxDB_4_合并机制与性能测试.md",
+    "JAVA/时序数据库InfluxDB/InfluxDB_3_时序压缩算法详解.md",
     "JAVA/时序数据库InfluxDB/InfluxDB TSM存储引擎之TSMFile.md",
     "JAVA/八股文/计算机网络/计算机网络.md",
     "JAVA/八股文/计算机网络/HTTP_HTTPS-牛客面经八股.md",

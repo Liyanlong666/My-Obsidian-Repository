@@ -41,6 +41,7 @@ CREATE DATABASE <database_name> WITH DURATION 30d REPLICATION 1 SHARD DURATION 1
 关系模型（MySQL等）需要严格定义 Schema，而 InfluxDB 更加灵活。
 
 **关系模型示例：**
+
 | Timestamp | region | host | cpu_usage | mem_usage |
 | --- | --- | --- | --- | --- |
 | 2024-01-15 00:00:00 | Beijing | server01 | 0.2 | 0.1 |
