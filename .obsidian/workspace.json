@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "JAVA/kafka/kafka.md",
+                "file": "JAVA/八股文/计算机网络/计算机网络.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "kafka"
+              "title": "计算机网络"
             }
           }
         ]
@@ -196,13 +196,14 @@
   },
   "active": "f9b1b9b91e1b9ed4",
   "lastOpenFiles": [
+    "JAVA/八股文/计算机网络/HTTP_HTTPS-牛客面经八股.md",
+    "JAVA/kafka/kafka.md",
     "README.md",
     "JAVA",
     "JAVA/时序数据库InfluxDB/内存索引和时间结构合并树（TSM）.md",
     "JAVA/八股文/JUC面试题/并发工具类/并发工具类.md",
     "JAVA/八股文/计算机网络/计算机网络.md",
     "JAVA/八股文/计算机网络/TCP 三次握手与四次挥手 _ 小林coding.md",
-    "JAVA/八股文/计算机网络/HTTP_HTTPS-牛客面经八股.md",
     "JAVA/八股文/JUC面试题/锁/锁.md",
     "JAVA/AI Coding Agent Prompt/AI Coding Agent Prompt.md",
     "JAVA/AI Coding Agent Prompt",
@@ -221,7 +222,6 @@
     "JAVA/algorithm-go/让我们一起刷算法/algorithm-go",
     "JAVA/algorithm-go/让我们一起刷算法",
     "JAVA/algorithm-go",
-    "JAVA/kafka/kafka.md",
     "JAVA/kafka/kafka.assert",
     "JAVA/kafka",
     "JAVA/非算法类 手撕/非算法类 手撕.md",
